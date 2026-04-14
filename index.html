@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>食品专业外语·智能刷题器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, sans-serif;
+            background: #f1f8e9;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 700px;
+            width: 100%;
+            background: white;
+            border-radius: 48px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        .stats-bar {
+            background: #2e7d32;
+            padding: 16px 24px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-weight: 600;
+        }
+        .stat-item {
+            background: #1b5e20;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+        }
+        .stat-number {
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: white;
+            color: #1b5e20;
+            padding: 0 8px;
+            border-radius: 30px;
+            min-width: 40px;
+            display: inline-block;
+            text-align: center;
+            margin-left: 6px;
+        }
+        .question-panel {
+            padding: 28px 24px 16px 24px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .question-label {
+            font-size: 0.8rem;
+            color: #558b2f;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .question-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2d1b;
+            line-height: 1.3;
+            word-break: break-word;
+            background: #f9fbe7;
+            padding: 16px 20px;
+            border-radius: 32px;
+            margin: 8px 0;
+            border: 1px solid #e6ee9c;
+        }
+        .options-area {
+            padding: 16px 24px 24px 24px;
+        }
+        .option-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 60px;
+            padding: 14px 20px;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .option-btn:hover:not(:disabled) {
+            background: #e8f0e3;
+            border-color: #81c784;
+        }
+        .correct-option {
+            background: #c8e6c9 !important;
+            border-color: #2e7d32 !important;
+            color: #1b5e20;
+        }
+        .wrong-option {
+            background: #ffebee !important;
+            border-color: #c62828 !important;
+            color: #b71c1c;
+            text-decoration: line-through;
+        }
+        .feedback {
+            margin: 8px 24px 20px 24px;
+            padding: 12px 18px;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            background: #fafafa;
+            border-left: 6px solid #9e9e9e;
+        }
+        .feedback-correct {
+            background: #e8f5e9;
+            border-left-color: #2e7d32;
+            color: #1b5e20;
+        }
+        .feedback-wrong {
+            background: #ffebee;
+            border-left-color: #d32f2f;
+            color: #b71c1c;
+        }
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 8px 24px 28px 24px;
+            justify-content: space-between;
+        }
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            background: #eceff1;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: #2e7d32;
+            color: white;
+        }
+        .btn-outline {
+            border: 1px solid #8bc34a;
+            background: white;
+            color: #33691e;
+        }
+        .btn-danger {
+            background: #ef5350;
+            color: white;
+        }
+        .mistake-btn {
+            background: #ffa000;
+            color: white;
+        }
+        .mistake-panel {
+            background: #fff8e1;
+            margin: 0 24px 24px 24px;
+            border-radius: 28px;
+            padding: 12px 18px;
+            border-top: 2px solid #ffca28;
+        }
+        .mistake-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: #bf360c;
+        }
+        .mistake-list {
+            max-height: 180px;
+            overflow-y: auto;
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .mistake-tag {
+            background: #ffecb3;
+            border-radius: 40px;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #8d6e63;
+            padding: 16px 24px 24px;
+        }
+        @media (max-width: 550px) {
+            .question-text { font-size: 1.5rem; }
+            .stats-bar { flex-direction: column; }
+            .option-btn { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-container" id="app">
+    <div class="stats-bar">
+        <div class="stat-item">📊 总词库 <span class="stat-number" id="totalCount">0</span></div>
+        <div class="stat-item">✅ 已练 <span class="stat-number" id="practicedCount">0</span></div>
+        <div class="stat-item">❌ 错题本 <span class="stat-number" id="mistakeCount">0</span></div>
+    </div>
+    <div class="question-panel">
+        <div class="question-label">🔖 当前题型 · 选意思</div>
+        <div class="question-text" id="questionWord">loading...</div>
+    </div>
+    <div class="options-area" id="optionsContainer"></div>
+    <div class="feedback" id="feedbackMsg">💡 点击选项开始刷题，答错自动加入错题本</div>
+    <div class="action-buttons">
+        <button class="btn btn-outline" id="nextBtn">⏩ 下一题</button>
+        <button class="btn btn-primary" id="randomBtn">🎲 随机一题</button>
+        <button class="btn mistake-btn" id="mistakeOnlyBtn">📖 只练错题</button>
+        <button class="btn btn-danger" id="clearMistakeBtn">🗑 清空错题本</button>
+    </div>
+    <div class="mistake-panel" id="mistakePanel">
+        <div class="mistake-header">
+            <span>📘 错题本 (点击标签快速定位)</span>
+            <span style="font-size:12px">🔁 答对自动移出</span>
+        </div>
+        <div class="mistake-list" id="mistakeList"></div>
+    </div>
+    <footer>✔️ 四选一 · 根据英文选出正确中文 | 记录薄弱点高效冲刺</footer>
+</div>
+<script>
+    const rawVocabulary = [
+        "Aesthetic appeal,美感","agrochemical,农用化学品","alcohol,酒精、乙醇","bean,豆，豆科植物","biodiversity,生物多样性","biotechnology,生物技术","butchered,宰好的","butter,黄油","carbohydrate,碳水化合物","cereal,谷物",
+        "common agricultural policy,共同农业政策","cooling,冷却","cultural identity,文化认同","curdling,凝结，凝乳","curing,腌腊","dairy product,乳制品","diet,膳食","distribution,配送","enhance,强化，提高","fat,脂肪",
+        "fermentation,发酵","fermented product,发酵制品","flavor,风味","flavoring,风味剂","food industry,食品工业","food manufacture,食品制造","food processing,食品加工","food processing technique,食品加工技术","food safety,食品安全","foraging,觅食",
+        "fungus,真菌","harvested,收获的","honey,蜂蜜","ingredient,配料","leavened bread,发酵的面包","maize,玉米","mass market,大众市场","meal,配餐","milling,制粉，研磨","oilseed,油籽",
+        "organic farming method,有机耕作方式","packaged food,包装食品","packaging,包装","palatability,适口性，可口性","pickled food,腌制食品","pickles,腌渍，酸渍","preservative,防腐剂","preserve,保藏，防腐","pressure cooking,加压蒸煮","process,加工，过程",
+        "product quality,产品质量","protein,蛋白质","ranching,牧养；饲养","rapeseed,油菜籽","raw ingredient,原配料","retailer,零售商","salting,盐腌","seed-based food,种子类食品","slaughtered,屠宰的","smoking,烟熏的",
+        "sophisticated processing,精细化加工","spice,香料，调味料","subsistence,自产自用的","taste,味道，滋味","trimming,修整，修剪，整理","wheat,小麦","world trade organization,世界贸易组织","yogurt,酸乳","Acidity,酸度","aggregate,聚集",
+        "alkalinity,碱度","Biochemical reactions,生化反应","body fluid,体液","breakfast cereal flake,早餐谷物片","chlorine,氯","Contaminant,污染物","dehydration,脱水，人工干燥","dipolar,偶极的，两极","evaporate,蒸发","flavor compound,风味化合物",
+        "fluoride,氟","Free water,自由水","freezing temperature,冻结温度","frozen desserts,冷冻甜食","glass transition,玻璃化转变","hydrogen bond,氢键","hydrolysis,水解","Impermeable to water vapor,不透水蒸汽的","inert,惰性","inorganic,无机的",
+        "lipid,脂质","Metabolic,代谢的","microorganism,微生物","microwave field,微波场","mineral,矿物质","nutrient,营养素","off-flavor,异味的","Organic,有机的","parasite,寄生虫","polar molecule,极性分子",
+        "relative humidity,相对湿度","Spoilage,腐败","starch,淀粉","water activity,水分活度","aldehyde,醛，乙醛","amine,胺","amino acid,氨基酸","amylopectin,支链淀粉","amylose,直链淀粉","Bacteria,细菌",
+        "baking,焙烤，烘焙","brown crust,面包皮","Caramelization,焦糖化","carbonyl,羰基","cellulose,纤维素","corn syrup,玉米糖浆","covalently,共价地","enzyme,酶","enzyme-resistant starch,酶抗性淀粉","Fructose,果糖",
+        "gel,凝胶","gelatinization,糊化","Glucose,葡萄糖","heteropolysaccharides,杂多糖","hydrolyze,水解","Indigestibility,不消化","ketone,酮","lactose intolerant,乳糖不适应者","Maillard browning,美拉德褐变","monosaccharide,单糖",
+        "Polymer,聚合物，高分子化合物","polysaccharide,多糖","retrogradation,老化","Rheological,流变学的","staling,陈化，老化","sucrose,蔗糖","Sweetness,甜度","Acid bath,酸浴","alkali-soluble,碱溶性","amino group,氨基",
+        "Ascorbic acid,抗坏血酸，维生素C","carboxylic acid group,羧基","coagulation,凝结，凝固","Contamination,污染","cysteine,半胱氨酸，巯基丙氨酸","denaturation,变性","Disulfide bond,二硫键","emulsification,乳化","enzymatic browning,酶促褐变","Gelatin,明胶",
+        "glycine,甘氨酸","hydrophile,亲水的","Hydrophobe,疏水的","ionic,离子的","isoelectric point,等电点","Metabolism,代谢","mold,霉菌","peptide bond,肽键","Polypeptide,多肽","precipitation,沉淀",
+        "primary structure,一级结构","Reactivity,活性","texture,质构，质地","thickening agents,增稠剂","tyrosine,酪氨酸","whey,乳清，蛋清","Yeast,酵母（菌）","Antioxidant,抗氧化剂","catalyst,催化剂","cholesterol,胆固醇",
+        "Citric acid,柠檬酸","decomposition,分解","deterioration,变质","ester bond,酯键","fatty acid,脂肪酸","glycerol,甘油，丙三醇","hydrogenation,氢化","Hydroperoxide,氢过氧化物","microbial spoilage,微生物腐败","oxidation,氧化",
+        "Oxygen impermeable packaging,隔氧包装","peroxide,过氧化物","phospholipids,磷脂","Pigment,色素","sensory,感官的","shelf-life,货架期，货架寿命","triglyceride,甘油三酯","ultraviolet light,紫外光","Vacuum packaging,真空包装","wax,蜡质",
+        "Assumption,假设","calories,卡路里","dielectric constant,介电常数","Electrical conductivity,电导率","electromagnetic energy,电磁能","mastication,咀嚼","Newtonian fluids,牛顿流体","specific gravity,比重","Sensory property of texture,质构的感官品质","specific heat,比热容",
+        "spectrophotometers,分光光度计","syrup,糖浆","thermal conductivity,导热率","Agar,琼脂","air-tight,不透空气的，气密性的","barley,大麦","Benign,有益的","canning,罐头制造，装罐头","coconut,椰子","food irradiation,食品辐照",
+        "food preservation,食品保藏","Freeze drying,冷冻干燥","ginger,姜","hydrocarbon,碳氢化合物","millet,小米","oat,燕麦","Pathogen,病原菌","pressure canning,加压杀菌罐头制备","radioactive sources,辐射源，放射源","Rice,大米",
+        "rye,黑麦","Sugar crystallization,糖结晶","Toxin,毒素","vinegar,醋","virus,病毒","Vacuum-packing,真空包装","Blanching,烫漂","commercial sterilization,商业灭菌","concentrate,浓缩物","Microbial population,微生物数量",
+        "moisture,水分","product attribute,产品属性","Pasteurization,巴氏灭菌","Refrigeration temperature,冷藏温度","refrigerated food,冷藏食品","Thermal process,热处理，热加工","Spoilage organism,腐败微生物","vegetative pathogen,生长性病原菌，营养病原菌","Alcoholic drink,酒精饮料","Labeling,标签",
+        "Alcohols,醇类","Crystallinity,结晶度，结晶，结晶性","Dietary fiber,膳食纤维","Lactose,乳糖","Galactose,半乳糖","Maltose,麦芽糖","Reducing sugar,还原糖","Sweetener,甜味剂","Xylitol,木糖醇","Amino acid residues,氨基酸残基",
+        "Essential amino acid,必需氨基酸","Reactive site,活性部位","Three-dimensional structure,三维结构","Whole milk,全乳","Double bond,双键","Essential fatty acid,必需脂肪酸","Formulated food,配方食品","Osteoporosis,骨质疏松症","Shellfish,贝类","Antibiotic,抗生素",
+        "Calcium,钙","Phosphorus,磷","Potassium,钾","Collagen,胶原蛋白","Folic acid,叶酸","Water-soluble vitamin,水溶性维生素","Fat-soluble vitamin,脂溶性维生素","Additive,添加剂","Food additives and contaminants,食品添加剂和污染物","Coloring agent,着色剂",
+        "Emulsifier,乳化剂","Flavor enhancer,风味增强剂","Flavoring agent,风味剂","Frozen food,冷冻食品","Iodine,碘","Nutraceutical,保健品的","Nutritional deficiencies,营养缺乏","Snack,点心，小吃，快餐","Stabilizer,稳定剂","Bacteriophage,噬菌体",
+        "Flora,菌系","Food borne illness,食源性疾病，食物传播的疾病","Microflora,菌群，菌系","Pasteurization,巴氏杀菌","Penicillium,青霉","Probiotic,益生菌","Public health hazards,公共健康危害","Refrigerated fresh meat,冷藏新鲜肉","Sterilization,灭菌","Vibrio,弧菌属",
+        "Gelled foods,凝胶食品","Newtonian liquid,牛顿流体","Air tight,不透空气的，气密性的","Crystallisation,结晶","sugar crystallisation,糖结晶","Spray drying,喷雾干燥","Sugaring,糖渍，加糖，撒糖，使甜","WHO,世界卫生组织","Extraction,提取，萃取","Label,标签，贴标签",
+        "Perishable,易腐败的","Seafood,海洋食物，海鲜，海产","Shelf-stable,货架稳定的","Coronavirus,冠状病毒","Food borne microorganisms,食源性微生物","Foodborne disease,食源性疾病","Good hygiene practice,良好卫生规范","Good manufacturing practice,良好制造规范","Malnutrition,营养不良","Mycotoxins,真菌毒素",
+        "Pathogenic bacteria,病原菌","Pesticide,农药","Pollutant,污染物","Veterinary residues,兽药残留"
+    ];
+
+    const fullDict = rawVocabulary.map(line => {
+        const commaIndex = line.indexOf(',');
+        const word = line.substring(0, commaIndex).trim();
+        const meaning = line.substring(commaIndex + 1).trim();
+        return { word, meaning };
+    });
+
+    let currentQuestion = null;
+    let currentOptions = [];
+    let answered = false;
+    let selectedOptionIdx = -1;
+    let mistakeSet = new Set();
+    let practiceMode = 'all';
+
+    const totalSpan = document.getElementById('totalCount');
+    const practicedSpan = document.getElementById('practicedCount');
+    const mistakeCountSpan = document.getElementById('mistakeCount');
+    const questionWordDiv = document.getElementById('questionWord');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const feedbackDiv = document.getElementById('feedbackMsg');
+    const nextBtn = document.getElementById('nextBtn');
+    const randomBtn = document.getElementById('randomBtn');
+    const mistakeOnlyBtn = document.getElementById('mistakeOnlyBtn');
+    const clearMistakeBtn = document.getElementById('clearMistakeBtn');
+    const mistakeListDiv = document.getElementById('mistakeList');
+
+    function updateStatsUI() {
+        totalSpan.innerText = fullDict.length;
+        practicedSpan.innerText = (fullDict.length - mistakeSet.size) + "✓";
+        mistakeCountSpan.innerText = mistakeSet.size;
+    }
+
+    function renderMistakeTags() {
+        mistakeListDiv.innerHTML = '';
+        if (mistakeSet.size === 0) {
+            mistakeListDiv.innerHTML = '<span style="color:#aaa;">✨ 暂无错题，继续答题～</span>';
+            return;
+        }
+        const mistakeWords = Array.from(mistakeSet);
+        mistakeWords.forEach(word => {
+            const tag = document.createElement('span');
+            tag.className = 'mistake-tag';
+            tag.innerText = word.length > 28 ? word.slice(0,25)+'…' : word;
+            tag.title = `点击复习: ${word}`;
+            tag.addEventListener('click', () => {
+                const targetEntry = fullDict.find(item => item.word === word);
+                if (targetEntry) loadSpecificQuestion(targetEntry);
+            });
+            mistakeListDiv.appendChild(tag);
+        });
+    }
+
+    function getRandomWordFromPool() {
+        let pool = practiceMode === 'mistake' && mistakeSet.size > 0 
+            ? fullDict.filter(item => mistakeSet.has(item.word))
+            : fullDict;
+        if (practiceMode === 'mistake' && mistakeSet.size === 0) {
+            practiceMode = 'all';
+            mistakeOnlyBtn.innerText = '📖 只练错题';
+            pool = fullDict;
+        }
+        if (pool.length === 0) return null;
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function generateDistractors(correctWordObj, count = 3) {
+        let possible = fullDict.filter(item => item.word !== correctWordObj.word && item.meaning !== correctWordObj.meaning);
+        if (possible.length < count) possible = fullDict.filter(item => item.word !== correctWordObj.word);
+        const shuffled = [...possible];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        const selected = shuffled.slice(0, count).map(item => item.meaning);
+        const unique = [...new Set(selected)];
+        while(unique.length < count) unique.push("食品工艺术语");
+        return unique.slice(0, count);
+    }
+
+    function buildOptions(correctWord) {
+        const dists = generateDistractors(correctWord, 3);
+        let opts = [
+            { meaning: correctWord.meaning, isCorrect: true },
+            ...dists.map(m => ({ meaning: m, isCorrect: false }))
+        ];
+        for (let i = opts.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [opts[i], opts[j]] = [opts[j], opts[i]];
+        }
+        return opts;
+    }
+
+    function loadSpecificQuestion(wordObj) {
+        if (!wordObj) return;
+        currentQuestion = wordObj;
+        currentOptions = buildOptions(currentQuestion);
+        answered = false;
+        selectedOptionIdx = -1;
+        renderQuestionUI();
+    }
+
+    function loadRandomQuestion() {
+        const wordObj = getRandomWordFromPool();
+        if (!wordObj) return;
+        loadSpecificQuestion(wordObj);
+    }
+
+    function renderQuestionUI() {
+        if (!currentQuestion) return;
+        questionWordDiv.innerText = currentQuestion.word;
+        optionsContainer.innerHTML = '';
+        currentOptions.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt.meaning;
+            if (answered) {
+                btn.disabled = true;
+                if (opt.isCorrect) btn.classList.add('correct-option');
+                if (selectedOptionIdx === idx && !opt.isCorrect) btn.classList.add('wrong-option');
+            }
+            btn.addEventListener('click', () => {
+                if (answered) return;
+                handleAnswer(idx, opt.isCorrect);
+            });
+            optionsContainer.appendChild(btn);
+        });
+        if (!answered) {
+            feedbackDiv.innerHTML = '🤔 选择一个最匹配的中文释义...';
+            feedbackDiv.className = 'feedback';
+        }
+    }
+
+    function handleAnswer(selectedIdx, isCorrect) {
+        if (answered) return;
+        answered = true;
+        selectedOptionIdx = selectedIdx;
+        const selectedMeaning = currentOptions[selectedIdx].meaning;
+        const correctMeaning = currentQuestion.meaning;
+        
+        if (isCorrect) {
+            if (mistakeSet.has(currentQuestion.word)) {
+                mistakeSet.delete(currentQuestion.word);
+                renderMistakeTags();
+                updateStatsUI();
+                feedbackDiv.innerHTML = `✅ 漂亮！ "${currentQuestion.word}" 答对了，已从错题本移除！`;
+            } else {
+                feedbackDiv.innerHTML = `✅ 正确！ “${currentQuestion.word}” 释义为 “${correctMeaning}”`;
+            }
+            feedbackDiv.className = 'feedback feedback-correct';
+        } else {
+            if (!mistakeSet.has(currentQuestion.word)) {
+                mistakeSet.add(currentQuestion.word);
+                renderMistakeTags();
+                updateStatsUI();
+                feedbackDiv.innerHTML = `❌ 错误！ “${currentQuestion.word}” 的正确意思是 “${correctMeaning}”。<br> 你选了 “${selectedMeaning}”，已加入错题本。`;
+            } else {
+                feedbackDiv.innerHTML = `❌ 再次答错！ “${currentQuestion.word}” 意思是 “${correctMeaning}”，继续巩固吧。`;
+            }
+            feedbackDiv.className = 'feedback feedback-wrong';
+        }
+        renderQuestionUI();
+        updateStatsUI();
+    }
+
+    function nextQuestion() {
+        if (!answered) {
+            feedbackDiv.innerHTML = '⚠️ 请先作答当前题目再继续下一题～';
+            feedbackDiv.className = 'feedback';
+            return;
+        }
+        loadRandomQuestion();
+    }
+
+    function randomQuestion() {
+        loadRandomQuestion();
+    }
+
+    function toggleMistakeMode() {
+        if (practiceMode === 'all') {
+            if (mistakeSet.size === 0) {
+                feedbackDiv.innerHTML = '📭 错题本为空，无法切换到错题模式';
+                feedbackDiv.className = 'feedback';
+                return;
+            }
+            practiceMode = 'mistake';
+            mistakeOnlyBtn.innerText = '📚 全部单词';
+            feedbackDiv.innerHTML = '🔁 已切换至【只练错题本】模式';
+        } else {
+            practiceMode = 'all';
+            mistakeOnlyBtn.innerText = '📖 只练错题';
+            feedbackDiv.innerHTML = '🌐 已切换至【全库模式】';
+        }
+        feedbackDiv.className = 'feedback';
+        loadRandomQuestion();
+    }
+
+    function clearMistakes() {
+        if (mistakeSet.size === 0) {
+            feedbackDiv.innerHTML = '✨ 错题本已经是空的';
+            feedbackDiv.className = 'feedback';
+            return;
+        }
+        mistakeSet.clear();
+        renderMistakeTags();
+        updateStatsUI();
+        if (practiceMode === 'mistake') {
+            practiceMode = 'all';
+            mistakeOnlyBtn.innerText = '📖 只练错题';
+        }
+        feedbackDiv.innerHTML = '🗑 错题本已清空';
+        feedbackDiv.className = 'feedback';
+        loadRandomQuestion();
+    }
+
+    nextBtn.addEventListener('click', nextQuestion);
+    randomBtn.addEventListener('click', randomQuestion);
+    mistakeOnlyBtn.addEventListener('click', toggleMistakeMode);
+    clearMistakeBtn.addEventListener('click', clearMistakes);
+
+    function init() {
+        updateStatsUI();
+        renderMistakeTags();
+        practiceMode = 'all';
+        mistakeOnlyBtn.innerText = '📖 只练错题';
+        loadRandomQuestion();
+    }
+    init();
+</script>
+</body>
+</html>
